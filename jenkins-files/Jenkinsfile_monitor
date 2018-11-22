@@ -69,7 +69,7 @@ pipeline {
             steps {
             	sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose-monitor.yml  down"
             	
-                sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose-monitor.yml  up"
+                sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose-monitor.yml  up -d"
             }
         }
     
