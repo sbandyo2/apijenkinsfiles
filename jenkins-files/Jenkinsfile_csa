@@ -55,7 +55,7 @@ pipeline {
         stage('Deploy Docker images') {
             
             steps {
-                sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  down"
+                sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  stop csa"
                 sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  up --no-deps -d"
             }
         }
