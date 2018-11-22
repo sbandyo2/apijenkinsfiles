@@ -1,0 +1,84 @@
+pipeline {
+    agent any
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '2'))
+        
+    }
+    parameters {
+        string(name: 'IMAGE_REPO_NAME', defaultValue: 'aribaapi', description: '')
+        string(name: 'LATEST_BUILD_TAG', defaultValue: 'latest', description: '')
+    }
+    stages {
+          stage('Build') {
+            
+            steps {
+                git 'https://github.com/sbandyo2/apiappmonitormodule.git'
+                
+                
+                
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f monitor-service/pom.xml"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f monitor-service/pom.xml"
+                
+                sh "cp monitor-service/target/bootadmin.jar  /home/mesadmin/Docker/docker/bootadmin.jar"
+                sh "cp monitor-service/Dockerfile.bootadmin /home/mesadmin/Docker/docker/Dockerfile.bootadmin"
+                
+                
+                sh "cp monitor-service/docker-compose-monitor.yml /home/mesadmin/Docker/docker/docker-compose-monitor.yml"
+                
+                
+                git 'https://github.com/sbandyo2/apizipkinmodule.git'
+                
+                sh "cp zipkin-service/zipkin-server-2.11.8-SNAPSHOT-exec.jar /home/mesadmin/Docker/docker/zipkin-server-2.11.8-SNAPSHOT-exec.jar"
+
+				sh "cp zipkin-service/Dockerfile.zipkin /home/mesadmin/Docker/docker/Dockerfile.zipkin"
+            }
+            
+        }
+        
+        stage('Prepare Docker Images') {
+            
+            steps {
+                sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose-monitor.yml  build"
+            }
+        }
+        stage ('Push Images to Registry') {
+            
+            environment {
+                 COMMIT_TAG = sh(returnStdout: true, script: 'git rev-parse HEAD').trim().take(7)
+                 BUILD_IMAGE_REPO_TAG = "${env.BUILD_TAG}"
+            }
+            steps {
+                
+                sh "/home/mesadmin/Docker/docker/docker login -u sbandyo2 -p apiibm18"
+                
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/bootadmin-server:${params.LATEST_BUILD_TAG}"
+                sh "docker tag ${params.IMAGE_REPO_NAME}/bootadmin-server:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/bootadmin-server:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/bootadmin-server:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/bootadmin-server:$BUILD_IMAGE_REPO_TAG"
+                
+                
+                 sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/zipkin-server:${params.LATEST_BUILD_TAG}"
+                sh "docker tag ${params.IMAGE_REPO_NAME}/zipkin-server:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/zipkin-server:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/zipkin-server:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/zipkin-server:$BUILD_IMAGE_REPO_TAG"
+                
+            }
+        }
+        stage('Deploy Docker images') {
+            
+            steps {
+            	sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose-monitor.yml  down"
+            	
+                sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose-monitor.yml  up"
+            }
+        }
+    
+    }
+    post {
+        always {
+            
+            sh 'echo "This will always run"' 
+        }
+    }
+    
+}

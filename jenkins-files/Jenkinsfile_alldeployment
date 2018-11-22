@@ -1,0 +1,169 @@
+pipeline {
+    agent any
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '2'))
+        
+    }
+    parameters {
+        string(name: 'IMAGE_REPO_NAME', defaultValue: 'aribaapi', description: '')
+        string(name: 'LATEST_BUILD_TAG', defaultValue: 'latest', description: '')
+    }
+    stages {
+          stage('Build') {
+            
+            steps {
+            	git 'https://github.com/sbandyo2/apiconfigmodule.git'
+                sh "cp config/Build/Test/application_worker1.properties config/src/main/resources/application.properties"
+                
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f config/pom.xml"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f config/pom.xml"
+                
+                sh "cp config/target/config.jar  /home/mesadmin/Docker/docker/config.jar"
+                sh "cp config/Dockerfile.config /home/mesadmin/Docker/docker/Dockerfile.config"
+                sh "cp config/docker-compose.yml /home/mesadmin/Docker/docker/docker-compose.yml"
+                
+                git 'https://github.com/sbandyo2/apidiscoverymodule.git'
+               
+                sh "cp discovery/Build/Test/bootstrap_worker1.properties discovery/src/main/resources/bootstrap.properties"
+                
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f discovery/pom.xml"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f discovery/pom.xml"
+                
+                sh "cp discovery/target/discovery.jar  /home/mesadmin/Docker/docker/discovery.jar"
+                sh "cp discovery/Dockerfile.discovery /home/mesadmin/Docker/docker/Dockerfile.discovery"
+                sh "cp discovery/discovery-entrypoint.sh /home/mesadmin/Docker/docker/discovery-entrypoint.sh"
+                
+                git 'https://github.com/sbandyo2/apiauthmodule.git'
+                
+                sh "cp auth-service/Build/Test/application_worker1.properties auth-service/src/main/resources/application.properties"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f auth-service/pom.xml"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f auth-service/pom.xml"
+                
+                sh "cp auth-service/target/auth-service.jar  /home/mesadmin/Docker/docker/auth-service.jar"
+                sh "cp auth-service/Dockerfile.auth /home/mesadmin/Docker/docker/Dockerfile.auth"
+                
+                sh "cp auth-service/auth-entrypoint.sh /home/mesadmin/Docker/docker/auth-entrypoint.sh"
+                
+                git 'https://github.com/sbandyo2/apigatewaymodule.git'
+                
+                sh "cp gateway/Build/Test/bootstrap_worker1.properties gateway/src/main/resources/bootstrap.properties"
+                
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f gateway/pom.xml"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f gateway/pom.xml"
+                
+                sh "cp gateway/target/gateway.jar  /home/mesadmin/Docker/docker/gateway.jar"
+                sh "cp gateway/Dockerfile.gateway /home/mesadmin/Docker/docker/Dockerfile.gateway"
+                sh "cp gateway/gateway-entrypoint.sh /home/mesadmin/Docker/docker/gateway-entrypoint.sh"
+                
+                git 'https://github.com/sbandyo2/apicsamodule.git'
+                
+                sh "cp csa-service/Build/Test/bootstrap_worker1.properties csa-service/src/main/resources/bootstrap.properties"
+                
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f csa-service/pom.xml"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f csa-service/pom.xml"
+                
+                sh "cp csa-service/target/csa.jar  /home/mesadmin/Docker/docker/csa.jar"
+                sh "cp csa-service/Dockerfile.csa /home/mesadmin/Docker/docker/Dockerfile.csa"
+                
+                sh "cp csa-service/csa-entrypoint.sh /home/mesadmin/Docker/docker/csa-entrypoint.sh"
+                
+                git 'https://github.com/sbandyo2/apibackendmodule.git'
+                
+                sh "cp backend-service/Build/Test/bootstrap_worker1.properties backend-service/src/main/resources/bootstrap.properties"
+                sh "cp backend-service/Build/Test/conn_config.properties backend-service/src/main/resources/conn_config.properties"
+                
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f backend-service/pom.xml"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f backend-service/pom.xml"
+                
+                sh "cp backend-service/target/backend.jar  /home/mesadmin/Docker/docker/backend.jar"
+                sh "cp backend-service/Dockerfile.backend /home/mesadmin/Docker/docker/Dockerfile.backend"
+                sh "cp backend-service/backend-entrypoint.sh /home/mesadmin/Docker/docker/backend-entrypoint.sh"
+                
+                git 'https://github.com/sbandyo2/apisaparibamodule.git'
+                
+                sh "cp sapariba-service/Build/Test/bootstrap_worker1.properties sapariba-service/src/main/resources/bootstrap.properties"
+                sh "cp sapariba-service/Build/Test/ws_connection.properties sapariba-service/src/main/resources/ws_connection.properties"
+                
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f sapariba-service/pom.xml"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f sapariba-service/pom.xml"
+                
+                sh "cp sapariba-service/target/ariba.jar  /home/mesadmin/Docker/docker/ariba.jar"
+                sh "cp sapariba-service/Dockerfile.ariba /home/mesadmin/Docker/docker/Dockerfile.ariba"
+                sh "cp sapariba-service/ariba-entrypoint.sh /home/mesadmin/Docker/docker/ariba-entrypoint.sh"
+            }
+            
+        }
+        
+        stage('Prepare Docker Images') {
+            
+            steps {
+                sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  build"
+            }
+        }
+        stage ('Push Images to Registry') {
+            
+            environment {
+                 COMMIT_TAG = sh(returnStdout: true, script: 'git rev-parse HEAD').trim().take(7)
+                 BUILD_IMAGE_REPO_TAG = "${env.BUILD_TAG}"
+            }
+            steps {
+                
+                sh "/home/mesadmin/Docker/docker/docker login -u sbandyo2 -p apiibm18"
+                
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/config-server:${params.LATEST_BUILD_TAG}"
+                
+                sh "docker tag ${params.IMAGE_REPO_NAME}/config-server:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/config-server:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/config-server:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/config-server:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker login -u sbandyo2 -p apiibm18"
+                
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/discovery:${params.LATEST_BUILD_TAG}"
+                sh "docker tag ${params.IMAGE_REPO_NAME}/discovery:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/discovery:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/discovery:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/discovery:$BUILD_IMAGE_REPO_TAG"
+                
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/auth-server:${params.LATEST_BUILD_TAG}"
+                sh "docker tag ${params.IMAGE_REPO_NAME}/auth-server:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/auth-server:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/auth-server:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/auth-server:$BUILD_IMAGE_REPO_TAG"
+                
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/gateway:${params.LATEST_BUILD_TAG}"
+                sh "docker tag ${params.IMAGE_REPO_NAME}/gateway:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/gateway:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/gateway:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/gateway:$BUILD_IMAGE_REPO_TAG"
+                
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/csa:${params.LATEST_BUILD_TAG}"
+                sh "docker tag ${params.IMAGE_REPO_NAME}/csa:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/csa:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/csa:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/csa:$BUILD_IMAGE_REPO_TAG"
+                
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/backend:${params.LATEST_BUILD_TAG}"
+                sh "docker tag ${params.IMAGE_REPO_NAME}/backend:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/backend:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/backend:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/backend:$BUILD_IMAGE_REPO_TAG"
+                
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/ariba:${params.LATEST_BUILD_TAG}"
+                sh "docker tag ${params.IMAGE_REPO_NAME}/ariba:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/ariba:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/ariba:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/ariba:$BUILD_IMAGE_REPO_TAG"
+                
+            }
+        }
+        stage('Deploy Docker images') {
+            
+            steps {
+            	sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  down"
+            	
+                sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  up -d"
+            }
+        }
+    
+    }
+    post {
+        always {
+            
+            sh 'echo "This will always run"' 
+        }
+    }
+    
+}
