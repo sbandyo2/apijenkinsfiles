@@ -90,6 +90,18 @@ pipeline {
                 sh "cp sapariba-service/target/ariba.jar  /home/mesadmin/Docker/docker/ariba.jar"
                 sh "cp sapariba-service/Dockerfile.ariba /home/mesadmin/Docker/docker/Dockerfile.ariba"
                 sh "cp sapariba-service/ariba-entrypoint.sh /home/mesadmin/Docker/docker/ariba-entrypoint.sh"
+                
+                
+                git 'https://github.com/sbandyo2/apiyourprocmodule.git'
+                
+                sh "cp yourprocure-service/Build/Test/bootstrap_worker1.properties yourprocure-service/src/main/resources/bootstrap.properties"
+                
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f sapariba-service/pom.xml"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f sapariba-service/pom.xml"
+                
+                sh "cp yourprocure-service/target/yp.jar  /home/mesadmin/Docker/docker/yp.jar"
+                sh "cp yourprocure-service/Dockerfile.yp /home/mesadmin/Docker/docker/Dockerfile.yp"
+                sh "cp yourprocure-service/yp-entrypoint.sh /home/mesadmin/Docker/docker/ariba-entrypoint.sh"
             }
             
         }
@@ -146,6 +158,11 @@ pipeline {
                 sh "docker tag ${params.IMAGE_REPO_NAME}/ariba:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/ariba:$BUILD_IMAGE_REPO_TAG"
                 sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/ariba:$BUILD_IMAGE_REPO_TAG"
                 sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/ariba:$BUILD_IMAGE_REPO_TAG"
+                
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/yp:${params.LATEST_BUILD_TAG}"
+                sh "docker tag ${params.IMAGE_REPO_NAME}/yp:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/yp:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/yp:$BUILD_IMAGE_REPO_TAG"
+                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/yp:$BUILD_IMAGE_REPO_TAG"
                 
             }
         }
