@@ -96,12 +96,12 @@ pipeline {
                 
                 sh "cp yourprocure-service/Build/Test/bootstrap_worker1.properties yourprocure-service/src/main/resources/bootstrap.properties"
                 
-                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f sapariba-service/pom.xml"
-                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f sapariba-service/pom.xml"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f yourprocure-service/pom.xml"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f yourprocure-service/pom.xml"
                 
                 sh "cp yourprocure-service/target/yp.jar  /home/mesadmin/Docker/docker/yp.jar"
                 sh "cp yourprocure-service/Dockerfile.yp /home/mesadmin/Docker/docker/Dockerfile.yp"
-                sh "cp yourprocure-service/yp-entrypoint.sh /home/mesadmin/Docker/docker/ariba-entrypoint.sh"
+                sh "cp yourprocure-service/yp-entrypoint.sh /home/mesadmin/Docker/docker/yp-entrypoint.sh"
             }
             
         }
