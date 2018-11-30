@@ -22,6 +22,8 @@ pipeline {
                 sh "cp config/Dockerfile.config /home/mesadmin/Docker/docker/Dockerfile.config"
                 sh "cp config/docker-compose.yml /home/mesadmin/Docker/docker/docker-compose.yml"
                 
+                sh "rm -R config"
+                
                 git 'https://github.com/sbandyo2/apidiscoverymodule.git'
                
                 sh "cp discovery/Build/Test/bootstrap_worker1.properties discovery/src/main/resources/bootstrap.properties"
@@ -32,6 +34,8 @@ pipeline {
                 sh "cp discovery/target/discovery.jar  /home/mesadmin/Docker/docker/discovery.jar"
                 sh "cp discovery/Dockerfile.discovery /home/mesadmin/Docker/docker/Dockerfile.discovery"
                 sh "cp discovery/discovery-entrypoint.sh /home/mesadmin/Docker/docker/discovery-entrypoint.sh"
+                
+                sh "rm -R discovery"
                 
                 git 'https://github.com/sbandyo2/apiauthmodule.git'
                 
@@ -44,6 +48,8 @@ pipeline {
                 
                 sh "cp auth-service/auth-entrypoint.sh /home/mesadmin/Docker/docker/auth-entrypoint.sh"
                 
+                sh "rm -R auth-service"
+                
                 git 'https://github.com/sbandyo2/apigatewaymodule.git'
                 
                 sh "cp gateway/Build/Test/bootstrap_worker1.properties gateway/src/main/resources/bootstrap.properties"
@@ -54,6 +60,8 @@ pipeline {
                 sh "cp gateway/target/gateway.jar  /home/mesadmin/Docker/docker/gateway.jar"
                 sh "cp gateway/Dockerfile.gateway /home/mesadmin/Docker/docker/Dockerfile.gateway"
                 sh "cp gateway/gateway-entrypoint.sh /home/mesadmin/Docker/docker/gateway-entrypoint.sh"
+                
+                sh "rm -R gateway"
                 
                 git 'https://github.com/sbandyo2/apicsamodule.git'
                 
@@ -67,6 +75,8 @@ pipeline {
                 
                 sh "cp csa-service/csa-entrypoint.sh /home/mesadmin/Docker/docker/csa-entrypoint.sh"
                 
+                sh "rm -R csa-service"
+                
                 git 'https://github.com/sbandyo2/apibackendmodule.git'
                 
                 sh "cp backend-service/Build/Test/bootstrap_worker1.properties backend-service/src/main/resources/bootstrap.properties"
@@ -78,6 +88,8 @@ pipeline {
                 sh "cp backend-service/target/backend.jar  /home/mesadmin/Docker/docker/backend.jar"
                 sh "cp backend-service/Dockerfile.backend /home/mesadmin/Docker/docker/Dockerfile.backend"
                 sh "cp backend-service/backend-entrypoint.sh /home/mesadmin/Docker/docker/backend-entrypoint.sh"
+                
+                sh "rm -R backend-service"
                 
                 git 'https://github.com/sbandyo2/apisaparibamodule.git'
                 
@@ -91,6 +103,7 @@ pipeline {
                 sh "cp sapariba-service/Dockerfile.ariba /home/mesadmin/Docker/docker/Dockerfile.ariba"
                 sh "cp sapariba-service/ariba-entrypoint.sh /home/mesadmin/Docker/docker/ariba-entrypoint.sh"
                 
+                sh "rm -R sapariba-service"
                 
                 git 'https://github.com/sbandyo2/apiyourprocmodule.git'
                 
@@ -103,6 +116,8 @@ pipeline {
                 sh "cp yourprocure-service/Dockerfile.yp /home/mesadmin/Docker/docker/Dockerfile.yp"
                 sh "cp yourprocure-service/yp-entrypoint.sh /home/mesadmin/Docker/docker/yp-entrypoint.sh"
                 
+                sh "rm -R yourprocure-service"
+                
                 git 'https://github.com/sbandyo2/apiordernowmodule.git'
                 
                 sh "cp on-service/Build/Test/bootstrap_worker1.properties on-service/src/main/resources/bootstrap.properties"
@@ -113,6 +128,8 @@ pipeline {
                 sh "cp on-service/target/on.jar  /home/mesadmin/Docker/docker/on.jar"
                 sh "cp on-service/Dockerfile.on /home/mesadmin/Docker/docker/Dockerfile.on"
                 sh "cp on-service/on-entrypoint.sh /home/mesadmin/Docker/docker/on-entrypoint.sh"
+                
+                sh "rm -R on-service"
             }
             
         }
@@ -180,6 +197,8 @@ pipeline {
                 sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/on:$BUILD_IMAGE_REPO_TAG"
                 sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/on:$BUILD_IMAGE_REPO_TAG"
                 
+                
+                
             }
         }
         stage('Deploy Docker images') {
@@ -196,6 +215,7 @@ pipeline {
         always {
             
             sh 'echo "This will always run"' 
+            sh "/home/mesadmin/removeImages"
         }
     }
     
