@@ -65,6 +65,7 @@ pipeline {
         always {
             
             sh 'echo "This will always run"' 
+            sh "sudo /home/mesadmin/removeImages"
         }
     }
     
