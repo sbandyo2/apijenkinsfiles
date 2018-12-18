@@ -160,11 +160,16 @@ pipeline {
             }
             
         }
-        
+        stage('Change to root') {
+            
+            steps {
+                sh "sudo su -"
+            }
+        }
         stage('Prepare Docker Images') {
             
             steps {
-                sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  build"
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  build"
             }
         }
         stage ('Push Images to Registry') {
@@ -175,64 +180,64 @@ pipeline {
             }
             steps {
                 
-                sh "/home/mesadmin/Docker/docker/docker login -u sbandyo2 -p apiibm18"
+                sh "sudo /home/mesadmin/Docker/docker/docker login -u sbandyo2 -p apiibm18"
                 
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/config-server:${params.LATEST_BUILD_TAG}"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/config-server:${params.LATEST_BUILD_TAG}"
                 
-                sh "docker tag ${params.IMAGE_REPO_NAME}/config-server:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/config-server:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/config-server:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/config-server:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker login -u sbandyo2 -p apiibm18"
+                sh "sudo  /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/config-server:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/config-server:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/config-server:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/config-server:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker login -u sbandyo2 -p apiibm18"
                 
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/discovery:${params.LATEST_BUILD_TAG}"
-                sh "docker tag ${params.IMAGE_REPO_NAME}/discovery:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/discovery:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/discovery:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/discovery:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/discovery:${params.LATEST_BUILD_TAG}"
+                sh "sudo  /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/discovery:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/discovery:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/discovery:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/discovery:$BUILD_IMAGE_REPO_TAG"
                 
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/auth-server:${params.LATEST_BUILD_TAG}"
-                sh "docker tag ${params.IMAGE_REPO_NAME}/auth-server:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/auth-server:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/auth-server:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/auth-server:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/auth-server:${params.LATEST_BUILD_TAG}"
+                sh "sudo  /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/auth-server:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/auth-server:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/auth-server:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/auth-server:$BUILD_IMAGE_REPO_TAG"
                 
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/gateway:${params.LATEST_BUILD_TAG}"
-                sh "docker tag ${params.IMAGE_REPO_NAME}/gateway:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/gateway:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/gateway:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/gateway:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/gateway:${params.LATEST_BUILD_TAG}"
+                sh "sudo  /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/gateway:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/gateway:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/gateway:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/gateway:$BUILD_IMAGE_REPO_TAG"
                 
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/csa:${params.LATEST_BUILD_TAG}"
-                sh "docker tag ${params.IMAGE_REPO_NAME}/csa:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/csa:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/csa:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/csa:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/csa:${params.LATEST_BUILD_TAG}"
+                sh "sudo  /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/csa:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/csa:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/csa:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/csa:$BUILD_IMAGE_REPO_TAG"
                 
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/csaw2:${params.LATEST_BUILD_TAG}"
-                sh "docker tag ${params.IMAGE_REPO_NAME}/csaw2:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/csaw2:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/csaw2:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/csaw2:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/csaw2:${params.LATEST_BUILD_TAG}"
+                sh "sudo  /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/csaw2:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/csaw2:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/csaw2:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/csaw2:$BUILD_IMAGE_REPO_TAG"
                 
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/backend:${params.LATEST_BUILD_TAG}"
-                sh "docker tag ${params.IMAGE_REPO_NAME}/backend:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/backend:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/backend:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/backend:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/backend:${params.LATEST_BUILD_TAG}"
+                sh "sudo  /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/backend:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/backend:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/backend:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/backend:$BUILD_IMAGE_REPO_TAG"
                 
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/ariba:${params.LATEST_BUILD_TAG}"
-                sh "docker tag ${params.IMAGE_REPO_NAME}/ariba:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/ariba:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/ariba:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/ariba:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/ariba:${params.LATEST_BUILD_TAG}"
+                sh "sudo  /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/ariba:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/ariba:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/ariba:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/ariba:$BUILD_IMAGE_REPO_TAG"
                 
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/yp:${params.LATEST_BUILD_TAG}"
-                sh "docker tag ${params.IMAGE_REPO_NAME}/yp:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/yp:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/yp:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/yp:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/yp:${params.LATEST_BUILD_TAG}"
+                sh "sudo  /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/yp:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/yp:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/yp:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/yp:$BUILD_IMAGE_REPO_TAG"
                 
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/ypw2:${params.LATEST_BUILD_TAG}"
-                sh "docker tag ${params.IMAGE_REPO_NAME}/ypw2:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/ypw2:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/ypw2:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/ypw2:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/ypw2:${params.LATEST_BUILD_TAG}"
+                sh "sudo  /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/ypw2:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/ypw2:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/ypw2:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/ypw2:$BUILD_IMAGE_REPO_TAG"
                 
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/on:${params.LATEST_BUILD_TAG}"
-                sh "docker tag ${params.IMAGE_REPO_NAME}/on:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/on:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/on:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/on:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/on:${params.LATEST_BUILD_TAG}"
+                sh "sudo  /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/on:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/on:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/on:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/on:$BUILD_IMAGE_REPO_TAG"
                 
                 
                 
@@ -241,9 +246,9 @@ pipeline {
         stage('Deploy Docker images') {
             
             steps {
-            	sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  down"
+            	sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  down"
             	
-                sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  up -d"
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  up -d"
             }
         }
     

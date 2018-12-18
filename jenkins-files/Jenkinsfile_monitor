@@ -38,7 +38,7 @@ pipeline {
         stage('Prepare Docker Images') {
             
             steps {
-                sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose-monitor.yml  build"
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose-monitor.yml  build"
             }
         }
         stage ('Push Images to Registry') {
@@ -49,27 +49,27 @@ pipeline {
             }
             steps {
                 
-                sh "/home/mesadmin/Docker/docker/docker login -u sbandyo2 -p apiibm18"
+                sh "sudo /home/mesadmin/Docker/docker/docker login -u sbandyo2 -p apiibm18"
                 
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/bootadmin-server:${params.LATEST_BUILD_TAG}"
-                sh "docker tag ${params.IMAGE_REPO_NAME}/bootadmin-server:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/bootadmin-server:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/bootadmin-server:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/bootadmin-server:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/bootadmin-server:${params.LATEST_BUILD_TAG}"
+                sh "sudo /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/bootadmin-server:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/bootadmin-server:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/bootadmin-server:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/bootadmin-server:$BUILD_IMAGE_REPO_TAG"
                 
                 
-                 sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/zipkin-server:${params.LATEST_BUILD_TAG}"
-                sh "docker tag ${params.IMAGE_REPO_NAME}/zipkin-server:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/zipkin-server:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/zipkin-server:$BUILD_IMAGE_REPO_TAG"
-                sh "/home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/zipkin-server:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/zipkin-server:${params.LATEST_BUILD_TAG}"
+                sh "sudo /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/zipkin-server:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/zipkin-server:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/zipkin-server:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/zipkin-server:$BUILD_IMAGE_REPO_TAG"
                 
             }
         }
         stage('Deploy Docker images') {
             
             steps {
-            	sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose-monitor.yml  down"
+            	sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose-monitor.yml  down"
             	
-                sh "/home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose-monitor.yml  up -d"
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose-monitor.yml  up -d"
             }
         }
     
