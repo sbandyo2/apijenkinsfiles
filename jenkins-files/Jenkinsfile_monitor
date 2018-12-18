@@ -79,7 +79,7 @@ pipeline {
             
             sh 'echo "This will always run"'
             sh 'sudo su -'
-            sh "sudo /home/mesadmin/removeImages"
+            sh "/home/mesadmin/removeImages"
         }
     }
     
