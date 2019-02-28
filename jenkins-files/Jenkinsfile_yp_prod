@@ -1,0 +1,94 @@
+pipeline {
+    agent any
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '2'))
+        
+    }
+    parameters {
+        string(name: 'IMAGE_REPO_NAME', defaultValue: 'aribaapi', description: '')
+        string(name: 'LATEST_BUILD_TAG', defaultValue: 'latest', description: '')
+    }
+    stages {
+          stage('Build') {
+            
+            steps {
+                git 'https://github.com/sbandyo2/apiyourprocmodule.git'
+                
+                sh "cp yourprocure-service/Build/Prod/bootstrap_worker1.properties yourprocure-service/src/main/resources/bootstrap.properties"
+                
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f yourprocure-service/pom.xml"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f yourprocure-service/pom.xml"
+                
+                sh "cp yourprocure-service/target/yp.jar  /home/mesadmin/Docker/docker/yp.jar"
+                sh "cp yourprocure-service/Dockerfile.yp /home/mesadmin/Docker/docker/Dockerfile.yp"
+                sh "cp yourprocure-service/yp-entrypoint.sh /home/mesadmin/Docker/docker/yp-entrypoint.sh"
+                
+                sh "rm -R yourprocure-service"
+                
+                git 'https://github.com/sbandyo2/apiyourprocmodule.git'
+                
+                sh "cp yourprocure-service/Build/Prod/bootstrap_worker2.properties yourprocure-service/src/main/resources/bootstrap.properties"
+                
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f yourprocure-service/pom.xml"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f yourprocure-service/pom.xml"
+                
+                sh "mv yourprocure-service/target/yp.jar  /home/mesadmin/Docker/docker/ypw2.jar"
+                sh "cp yourprocure-service/Dockerfile.ypw2 /home/mesadmin/Docker/docker/Dockerfile.ypw2"
+                sh "cp yourprocure-service/ypw2-entrypoint.sh /home/mesadmin/Docker/docker/ypw2-entrypoint.sh"
+                
+                sh "rm -R yourprocure-service"
+                
+                
+            }
+            
+        }
+        
+        stage('Prepare Docker Images') {
+            
+            steps {
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  build yp"
+                
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  build ypw2"
+            }
+        }
+        stage ('Push Images to Registry') {
+            
+            environment {
+                 COMMIT_TAG = sh(returnStdout: true, script: 'git rev-parse HEAD').trim().take(7)
+                 BUILD_IMAGE_REPO_TAG = "${env.BUILD_TAG}"
+            }
+            steps {
+                
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/yp:${params.LATEST_BUILD_TAG}"
+                sh "sudo  /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/yp:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/yp:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/yp:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/yp:$BUILD_IMAGE_REPO_TAG"
+                
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/ypw2:${params.LATEST_BUILD_TAG}"
+                sh "sudo  /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/ypw2:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/ypw2:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/ypw2:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/ypw2:$BUILD_IMAGE_REPO_TAG"
+                
+            }
+        }
+        stage('Deploy Docker images') {
+            
+            steps {
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  stop yp"
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  up --no-deps -d"
+                
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  stop ypw2"
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  up --no-deps -d"
+            }
+        }
+    
+    }
+    post {
+        always {
+            
+            sh 'echo "Removing unused images"' 
+            sh "/home/mesadmin/runRemoveImages"
+        }
+    }
+    
+}

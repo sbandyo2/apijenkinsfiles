@@ -1,0 +1,98 @@
+pipeline {
+    agent any
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '2'))
+        
+    }
+    parameters {
+        string(name: 'IMAGE_REPO_NAME', defaultValue: 'aribaapi', description: '')
+        string(name: 'LATEST_BUILD_TAG', defaultValue: 'latest', description: '')
+    }
+    stages {
+          stage('Build') {
+            
+            steps {
+                git 'https://github.com/sbandyo2/apicsamodule.git'
+                
+                sh "cp csa-service/Build/Prod/bootstrap_worker1.properties csa-service/src/main/resources/bootstrap.properties"
+                
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f csa-service/pom.xml"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f csa-service/pom.xml"
+                
+                sh "cp csa-service/target/csa.jar  /home/mesadmin/Docker/docker/csa.jar"
+                sh "cp csa-service/Dockerfile.csa /home/mesadmin/Docker/docker/Dockerfile.csa"
+                
+                sh "cp csa-service/csa-entrypoint.sh /home/mesadmin/Docker/docker/csa-entrypoint.sh"
+                
+                sh "rm -R csa-service"
+                
+                git 'https://github.com/sbandyo2/apicsamodule.git'
+                
+                sh "cp csa-service/Build/Prod/bootstrap_worker2.properties csa-service/src/main/resources/bootstrap.properties"
+                
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f csa-service/pom.xml"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f csa-service/pom.xml"
+                
+                sh "mv csa-service/target/csa.jar  /home/mesadmin/Docker/docker/csaw2.jar"
+                sh "cp csa-service/Dockerfile.csaw2 /home/mesadmin/Docker/docker/Dockerfile.csaw2"
+                
+                sh "cp csa-service/csaw2-entrypoint.sh /home/mesadmin/Docker/docker/csaw2-entrypoint.sh"
+                
+                sh "rm -R csa-service"
+                
+                
+            }
+            
+        }
+        
+        stage('Prepare Docker Images') {
+            
+            steps {
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  build csa"
+                
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  build csaw2"
+            }
+        }
+        stage ('Push Images to Registry') {
+            
+            environment {
+                 COMMIT_TAG = sh(returnStdout: true, script: 'git rev-parse HEAD').trim().take(7)
+                 BUILD_IMAGE_REPO_TAG = "${env.BUILD_TAG}"
+            }
+            steps {
+                
+                sh "sudo /home/mesadmin/Docker/docker/docker login -u sbandyo2 -p apiibm18"
+                
+                sh "sudo /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/csa:${params.LATEST_BUILD_TAG}"
+                sh "sudo /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/csa:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/csa:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/csa:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/csa:$BUILD_IMAGE_REPO_TAG"
+                
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/csaw2:${params.LATEST_BUILD_TAG}"
+                sh "sudo  /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/csaw2:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/csaw2:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/csaw2:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/csaw2:$BUILD_IMAGE_REPO_TAG"
+                
+            }
+        }
+        stage('Deploy Docker images') {
+            
+            steps {
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  stop csa"
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  up --no-deps -d"
+                
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  stop csaw2"
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  up --no-deps -d"
+            }
+        }
+    
+    }
+    post {
+        always {
+            
+            sh 'echo "Removing unused images"' 
+            sh "/home/mesadmin/runRemoveImages"
+        }
+    }
+    
+}
