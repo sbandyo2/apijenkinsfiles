@@ -40,6 +40,7 @@ pipeline {
                 git 'https://github.com/sbandyo2/apiauthmodule.git'
                 
                 sh "cp auth-service/Build/Prod/application_worker1.properties auth-service/src/main/resources/application.properties"
+                sh "cp auth-service/Build/Prod/credential.properties auth-service/src/main/resources/credential.properties"
                 sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f auth-service/pom.xml"
                 sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f auth-service/pom.xml"
                 
