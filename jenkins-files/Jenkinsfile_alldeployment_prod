@@ -5,7 +5,7 @@ pipeline {
         
     }
     parameters {
-        string(name: 'IMAGE_REPO_NAME', defaultValue: 'aribaapi', description: '')
+        string(name: 'IMAGE_REPO_NAME', defaultValue: 'aribaapiprod', description: '')
         string(name: 'LATEST_BUILD_TAG', defaultValue: 'latest', description: '')
     }
     stages {
@@ -20,7 +20,7 @@ pipeline {
                 
                 sh "cp config/target/config.jar  /home/mesadmin/Docker/docker/config.jar"
                 sh "cp config/Dockerfile.config /home/mesadmin/Docker/docker/Dockerfile.config"
-                sh "cp config/docker-compose.yml /home/mesadmin/Docker/docker/docker-compose.yml"
+                sh "cp config/docker-compose-prod.yml /home/mesadmin/Docker/docker/docker-compose.yml"
                 
                 sh "rm -R config"
                 
