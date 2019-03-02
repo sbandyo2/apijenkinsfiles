@@ -14,7 +14,7 @@ pipeline {
             steps {
                 git 'https://github.com/sbandyo2/apiappmonitormodule.git'
                 
-                
+                sh "cp monitor-service/Build/Prod/application_worker1.properties monitor-service/src/main/resources/application.properties"
                 
                 sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f monitor-service/pom.xml"
                 sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f monitor-service/pom.xml"

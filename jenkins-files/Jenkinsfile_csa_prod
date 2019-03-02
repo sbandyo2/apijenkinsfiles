@@ -79,10 +79,17 @@ pipeline {
             
             steps {
                 sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  stop csa"
+                
+                sh "/usr/bin/java -jar /home/mesadmin/deregister-deployable.jar CSA-SERVICE"
+                 
                 sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  up --no-deps -d"
                 
                 sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  stop csaw2"
+                
+                sh "/usr/bin/java -jar /home/mesadmin/deregister-deployable.jar CSA-SERVICEW2"
+                
                 sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  up --no-deps -d"
+                
             }
         }
     
