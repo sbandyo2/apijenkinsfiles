@@ -26,6 +26,20 @@ pipeline {
                 
                 sh "rm -R on-service"
                 
+                git 'https://github.com/sbandyo2/apiordernowmodule.git'
+                
+                sh "cp on-service/Build/Test/bootstrap_worker2.properties on-service/src/main/resources/bootstrap.properties"
+                
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' clean -f on-service/pom.xml"
+                sh "'/home/mesadmin/maven/apache-maven-3.5.4/bin/mvn' package -f on-service/pom.xml"
+                
+                sh "cp on-service/target/on.jar  /home/mesadmin/Docker/docker/on2.jar"
+                sh "cp on-service/Dockerfile.on2 /home/mesadmin/Docker/docker/Dockerfile.on2"
+                
+                sh "cp on-service/on2-entrypoint.sh /home/mesadmin/Docker/docker/on2-entrypoint.sh"
+                
+                sh "rm -R on-service"
+                
             }
             
         }
@@ -34,6 +48,8 @@ pipeline {
             
             steps {
                 sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  build ordernow"
+                
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  build ordernoww2"
             }
         }
         stage ('Push Images to Registry') {
@@ -49,12 +65,27 @@ pipeline {
                 sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/on:$BUILD_IMAGE_REPO_TAG"
                 sh "sudo  /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/on:$BUILD_IMAGE_REPO_TAG"
                 
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/on2:${params.LATEST_BUILD_TAG}"
+                sh "sudo  /home/mesadmin/Docker/docker/docker tag ${params.IMAGE_REPO_NAME}/on2:${params.LATEST_BUILD_TAG} ${params.IMAGE_REPO_NAME}/on2:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker push ${params.IMAGE_REPO_NAME}/on2:$BUILD_IMAGE_REPO_TAG"
+                sh "sudo  /home/mesadmin/Docker/docker/docker rmi  ${params.IMAGE_REPO_NAME}/on2:$BUILD_IMAGE_REPO_TAG"
+                
             }
         }
         stage('Deploy Docker images') {
             
             steps {
                 sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  stop ordernow"
+                
+                sh "/usr/bin/java -jar /home/mesadmin/deregister-deployable.jar ON-SERVICE"
+                
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  up --no-deps -d"
+                
+                
+                sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  stop ordernoww2"
+                
+                sh "/usr/bin/java -jar /home/mesadmin/deregister-deployable.jar ON-SERVICEW2"
+                
                 sh "sudo /home/mesadmin/Docker/docker/docker-compose -f /home/mesadmin/Docker/docker/docker-compose.yml  up --no-deps -d"
             }
         }
